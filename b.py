@@ -43,7 +43,7 @@ gamestate = [["-","-","-"],["-","-","-"],["-","-","-"]]
 #kernel used for noise removal
 kernel =  np.ones((7,7),np.uint8)
 # Load a color image 
-img = cv2.imread('7.png')
+img = cv2.imread('2.jpg')
 # get the image width and height
 img_width = img.shape[1]
 img_height = img.shape[0]
@@ -115,16 +115,16 @@ pionlewo = []
 poziomgora = []
 poziomdol = []
 for i in linie:
-    if i.orientacja == 1 and i.pozycjax>=0.5:
+    if i.orientacja == 1 and i.pozycjax>=0.5 and i.pozycjax<=0.9:
         pionprawo.append(i)
         pion.append(i)
-    if i.orientacja == 1 and i.pozycjax<0.5:
+    if i.orientacja == 1 and i.pozycjax<0.5 and i.pozycjax>0.1:
         pionlewo.append(i)
         pion.append(i)
-    if i.orientacja == 0 and i.pozycjay<0.5:
+    if i.orientacja == 0 and i.pozycjay<0.5 and i.pozycjay>0.1:
         poziomgora.append(i)
         poziom.append(i)
-    if i.orientacja == 0 and i.pozycjay>=0.5:
+    if i.orientacja == 0 and i.pozycjay>=0.5 and i.pozycjay<=0.9:
         poziomdol.append(i)
         poziom.append(i)
 
