@@ -3,7 +3,7 @@ import cv2
 from scipy import ndimage
 from math import sqrt
 
-iksy = ['x1.png', 'x2.png', 'x3.png', 'x4.png']
+iksy = ['zdjecia/x1.png', 'zdjecia/x2.png', 'zdjecia/x3.png', 'zdjecia/x4.png']
 class linia:
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
         self.x1 = x1
@@ -90,7 +90,7 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
 gamestate = [["-","-","-"],["-","-","-"],["-","-","-"]]
 
 kernel =  np.ones((7,7),np.uint8)
-img = cv2.imread('testx5.png')
+img = cv2.imread('zdjecia/testx5.png')
 img_width = img.shape[1]
 img_height = img.shape[0]
 
