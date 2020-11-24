@@ -41,9 +41,35 @@ class cross:
         self.pozycja = '-1'
     def policzsrodek(self):
         self.srodek = (self.x1+self.x2)/2, (self.y1+self.y2)/2
-    def okreslpozycje(self, prawo, dol, lewo, gora):
+    def okreslpozycje(self, prawo, dol, lewo, gora, gamestate):
         if self.srodek[1]<gora.srodek[1] and self.srodek[0]<lewo.srodek[0]:
             self.pozycja = 'gl'
+            gamestate[0][0] = 'x'
+        if self.srodek[1]<gora.srodek[1] and self.srodek[0]>prawo.srodek[0]:
+            self.pozycja = 'gp'
+            gamestate[0][2] = 'x'
+        if self.srodek[1]>dol.srodek[1] and self.srodek[0]>prawo.srodek[0]:
+            self.pozycja = 'dp'
+            gamestate[2][2] = 'x'
+        if self.srodek[1]>dol.srodek[1] and self.srodek[0]<lewo.srodek[0]:
+            self.pozycja = 'dl'
+            gamestate[2][0] = 'x'
+        if self.srodek[1]<gora.srodek[1] and self.srodek[0]>lewo.srodek[0] and self.srodek[0]<prawo.srodek[0]:
+            self.pozycja = 'gs'
+            gamestate[0][1] = 'x'
+        if self.srodek[1]>dol.srodek[1] and self.srodek[0]>lewo.srodek[0] and self.srodek[0]<prawo.srodek[0]:
+            self.pozycja = 'ds'
+            gamestate[2][1] = 'x'
+        if self.srodek[0]<lewo.srodek[0] and self.srodek[1]<dol.srodek[1] and self.srodek[1]>gora.srodek[1]:
+            self.pozycja = 'sl'
+            gamestate[1][0] = 'x'
+        if self.srodek[0]>prawo.srodek[0] and self.srodek[1]<dol.srodek[1] and self.srodek[1]>gora.srodek[1]:
+            self.pozycja = 'sp'
+            gamestate[1][2] = 'x'
+        if self.srodek[0]>lewo.srodek[0] and self.srodek[0]<prawo.srodek[0] and self.srodek[1]<dol.srodek[1] and self.srodek[1]>gora.srodek[1]:
+            self.pozycja = 'ss'
+            gamestate[1][1] = 'x'
+
 
 def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
@@ -64,7 +90,7 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
 gamestate = [["-","-","-"],["-","-","-"],["-","-","-"]]
 
 kernel =  np.ones((7,7),np.uint8)
-img = cv2.imread('10.png')
+img = cv2.imread('testx5.png')
 img_width = img.shape[1]
 img_height = img.shape[0]
 
@@ -207,12 +233,11 @@ for i in poziomgora:
 
 
 kreski = [maksikx, maksiky, minix, miniy]
-print(minix.srodek[0], miniy.srodek[1], '\n')
 
 for i in krzyze:
     i.policzsrodek()
-    i.okreslpozycje(maksikx, maksiky, minix, miniy)
-    print(i.srodek[0], i.srodek[1], '\n')
+    i.okreslpozycje(maksikx, maksiky, minix, miniy, gamestate)
+
 
 
 
@@ -229,7 +254,13 @@ if circles is not None:
         cv2.circle(lines_edges, (x, y), r, (0, 255, 0), 4)
         cv2.rectangle(lines_edges, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
-
+print("Gamestate:")
+for line in gamestate:
+        linetxt = ""
+        for cel in line:
+                linetxt = linetxt + "|" + cel
+        linetxt = linetxt + '|'
+        print(linetxt)
 cv2.imshow('image1', lines_edges)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
