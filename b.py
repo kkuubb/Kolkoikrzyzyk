@@ -106,9 +106,11 @@ class Circle:
             gamestate[1][1] = 'o'
 
 class Pole:
-    def __init__(self):
-        self.ydol
-        self.ygora
+    def __init__(self, ydol=-1, ygora=-1, xlewo=-1, xprawo=-1):
+        self.ydol = ydol
+        self.ygora = ygora
+        self.xlewo = xlewo
+        self.xprawo = xprawo
 
 
 def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -123,6 +125,10 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
         r = width / float(w)
         dim = (width, int(h * r))
     return cv2.resize(image, dim, interpolation=inter)
+
+def znajdzpola(prawo, dol, lewo, gora, pola):
+    for pole in pola:
+        pass
 
 
 
@@ -297,8 +303,11 @@ for i in kolka:
 
 for i in kreski:
     cv2.line(gotowe, (i.x1,i.y1), (i.x2,i.y2),(255,255,0),5)
+pola = []
+for i in range(9):
+    pola.append(Pole())
 
-
+znajdzpola(maksikx, maksiky, minix, miniy, pola)
 
 
 
