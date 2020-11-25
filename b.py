@@ -299,13 +299,17 @@ if circles is not None:
         cv2.circle(lines_edges, (x, y), r, (0, 255, 0), 4)
         cv2.rectangle(lines_edges, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
-print("Gamestate:")
+print("Stan gry to:")
 for line in gamestate:
         linetxt = ""
         for cel in line:
                 linetxt = linetxt + "|" + cel
         linetxt = linetxt + '|'
         print(linetxt)
+if (gamestate.count('x') >= gamestate.count('o')):
+    print("Teraz ruch gracza O")
+else:
+    print("Teraz ruch gracza X")
 cv2.imshow('image1', lines_edges)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
