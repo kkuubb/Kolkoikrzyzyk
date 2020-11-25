@@ -70,6 +70,41 @@ class cross:
             self.pozycja = 'ss'
             gamestate[1][1] = 'x'
 
+class Circle:
+    def __init__(self,x=0,y=0,r=0):
+        self.x = x
+        self.y = y
+        self.r = r
+        self.pozycja = ''
+    def okreslpozycje(self, prawo, dol, lewo, gora, gamestate):
+        if self.y<gora.srodek[1] and self.x<lewo.srodek[0]:
+            self.pozycja = 'gl'
+            gamestate[0][0] = 'o'
+        if self.y<gora.srodek[1] and self.x>prawo.srodek[0]:
+            self.pozycja = 'gp'
+            gamestate[0][2] = 'o'
+        if self.y>dol.srodek[1] and self.x>prawo.srodek[0]:
+            self.pozycja = 'dp'
+            gamestate[2][2] = 'o'
+        if self.y>dol.srodek[1] and self.x<lewo.srodek[0]:
+            self.pozycja = 'dl'
+            gamestate[2][0] = 'o'
+        if self.y<gora.srodek[1] and self.x>lewo.srodek[0] and self.x<prawo.srodek[0]:
+            self.pozycja = 'gs'
+            gamestate[0][1] = 'o'
+        if self.y>dol.srodek[1] and self.x>lewo.srodek[0] and self.x<prawo.srodek[0]:
+            self.pozycja = 'ds'
+            gamestate[2][1] = 'o'
+        if self.x<lewo.srodek[0] and self.y<dol.srodek[1] and self.y>gora.srodek[1]:
+            self.pozycja = 'sl'
+            gamestate[1][0] = 'o'
+        if self.x>prawo.srodek[0] and self.y<dol.srodek[1] and self.y>gora.srodek[1]:
+            self.pozycja = 'sp'
+            gamestate[1][2] = 'o'
+        if self.x>lewo.srodek[0] and self.x<prawo.srodek[0] and self.y<dol.srodek[1] and self.y>gora.srodek[1]:
+            self.pozycja = 'ss'
+            gamestate[1][1] = 'o'
+
 
 def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
@@ -90,7 +125,7 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
 gamestate = [["-","-","-"],["-","-","-"],["-","-","-"]]
 
 kernel =  np.ones((7,7),np.uint8)
-img = cv2.imread('zdjecia/testx5.png')
+img = cv2.imread('zdjecia/11.png') #najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
 img_width = img.shape[1]
 img_height = img.shape[0]
 
@@ -107,24 +142,31 @@ low_threshold = 50
 high_threshold = 150
 edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
 
-dilation = cv2.dilate(edges,kernel,iterations = 1)
-erosion = cv2.erode(dilation,kernel,iterations = 1)
+dilation1 = cv2.dilate(edges,kernel,iterations = 1)
+dilation2 = cv2.dilate(edges,kernel,iterations = 2)
+erosion = cv2.erode(dilation1,kernel,iterations = 1)
 
 
 
 
+kolka = []
 output = img.copy()
-circles = cv2.HoughCircles(blur_gray,  cv2.HOUGH_GRADIENT, 1, 50, param1 = 50, param2 = 30, minRadius = 1, maxRadius = 100)
+circles = cv2.HoughCircles(blur_gray,  cv2.HOUGH_GRADIENT, 1, 50, param1 = 50, param2 = 40, minRadius = 1, maxRadius = 100)
 if circles is not None:
 	circles = np.round(circles[0, :]).astype("int")
 	for (x, y, r) in circles:
 		cv2.circle(output, (x, y), r, (0, 255, 0), 4)
 		cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+for i in circles:
+    kolka.append(Circle(i[0], i[1], i[2]))
+
+
 krzyze = []
 for i in iksy: 
     template = cv2.imread(i)
     template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
     template = cv2.Canny(template, 50, 200)
+    templete = cv2.dilate(template,kernel,iterations = 1)
     (tH, tW) = template.shape[:2]
     found = None
 
@@ -236,6 +278,9 @@ kreski = [maksikx, maksiky, minix, miniy]
 
 for i in krzyze:
     i.policzsrodek()
+    i.okreslpozycje(maksikx, maksiky, minix, miniy, gamestate)
+
+for i in kolka:
     i.okreslpozycje(maksikx, maksiky, minix, miniy, gamestate)
 
 
