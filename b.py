@@ -105,6 +105,11 @@ class Circle:
             self.pozycja = 'ss'
             gamestate[1][1] = 'o'
 
+class Pole:
+    def __init__(self):
+        self.ydol
+        self.ygora
+
 
 def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
@@ -143,8 +148,12 @@ high_threshold = 150
 edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
 
 dilation1 = cv2.dilate(edges,kernel,iterations = 1)
-dilation2 = cv2.dilate(edges,kernel,iterations = 2)
-erosion = cv2.erode(dilation1,kernel,iterations = 1)
+dilation2 = cv2.dilate(edges,kernel,iterations = 3)
+erosion1 = cv2.erode(dilation1,kernel,iterations = 1)
+erosion2 = cv2.erode(dilation2,kernel,iterations = 2)
+
+
+
 
 
 
@@ -173,8 +182,8 @@ for i in iksy:
     for scale in np.linspace(0.1, 3.0, 20)[::-1]:
 
         # Resize image to scale and keep track of ratio
-        resized = maintain_aspect_ratio_resize(erosion, width=int(erosion.shape[1] * scale))
-        r = erosion.shape[1] / float(resized.shape[1])
+        resized = maintain_aspect_ratio_resize(erosion1, width=int(erosion1.shape[1] * scale))
+        r = erosion1.shape[1] / float(resized.shape[1])
 
         # Stop if template image size is larger than resized image
         if resized.shape[0] < tH or resized.shape[1] < tW:
@@ -210,7 +219,7 @@ min_line_length = 200
 max_line_gap = 20 
 line_image = np.copy(img) * 0 
 gotowe = np.copy(img) * 0 
-lines = cv2.HoughLinesP(erosion, rho, theta, threshold, np.array([]),
+lines = cv2.HoughLinesP(erosion2, rho, theta, threshold, np.array([]),
                     min_line_length, max_line_gap)
 
 linie = []
