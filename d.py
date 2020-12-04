@@ -122,6 +122,7 @@ class Pole:
         self.ygora = ygora
         self.xlewo = xlewo
         self.xprawo = xprawo
+        self.numer = 0
 
 
 def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -138,9 +139,32 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
     return cv2.resize(image, dim, interpolation=inter)
 
 
-def znajdzpola(prawo, dol, lewo, gora, pola):
-    for pole in pola:
-        pass
+def znajdzprzeciecia(prawo, dol, lewo, gora):
+    slupki = []
+    przeciecielewogora = []
+    przeciecielewogora.append(img_height*gora.pozycjay)
+    przeciecielewogora.append(img_width*lewo.pozycjax)
+    slupki.append(przeciecielewogora)
+    przeciecielewodol = []
+    przeciecielewodol.append(img_height*dol.pozycjay)
+    przeciecielewodol.append(img_width*lewo.pozycjax)
+    slupki.append(przeciecielewodol)
+    przeciecieprawodol = []
+    przeciecieprawodol.append(img_height*dol.pozycjay)
+    przeciecieprawodol.append(img_width*prawo.pozycjax)
+    slupki.append(przeciecieprawodol)
+    przeciecieprawogora = []
+    przeciecieprawogora.append(img_height*gora.pozycjay)
+    przeciecieprawogora.append(img_width*prawo.pozycjax)
+    slupki.append(przeciecieprawogora)
+    dlugoscgoralewoprawodol = sqrt((przeciecielewogora[1]-przeciecieprawodol[1])**2 + (przeciecielewogora[0]-przeciecieprawodol[0])**2)
+    dlugoscgoraprawolewodol = sqrt((przeciecieprawogora[1]-przeciecielewodol[1])**2 + (przeciecieprawogora[0]-przeciecielewodol[0])**2)
+    slupki.append([dlugoscgoralewoprawodol, dlugoscgoraprawolewodol])
+    dlugoscdobra = (dlugoscgoraprawolewodol+dlugoscgoralewoprawodol)/4
+    slupki.append(dlugoscdobra)
+    cododajemy = dlugoscdobra/sqrt(2)
+    slupki.append(cododajemy)
+    return slupki
 
 
 def znajdzkolka(obraz):
@@ -299,6 +323,10 @@ def znajdzkrawedzie():
     return kreski , najdluzsze
 
 
+def zasugerujruch(stan):
+    pass
+
+
 def pokazstangry():
     print("Stan gry to:")
     for line in gamestate:
@@ -317,7 +345,7 @@ def pokazplansze():
     cv2.imshow('image1', lines_edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-zdjecia = ['q2.png', 'q3.png', '10.png']
+zdjecia = ['q2.png', 'q3.png']
 for i in zdjecia:
     # to sa wartosci testowe wykorzystywane do obliczen
     gamestate = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
@@ -351,8 +379,15 @@ for i in zdjecia:
     pola = []
     for i in range(9):
         pola.append(Pole())
+    cos = znajdzprzeciecia(kreski[0], kreski[1], kreski[2], kreski[3])
+    print(cos)
+
     lines_edges = cv2.addWeighted(img, 0.8, gotowe, 1, 0)
     kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
     krzyze = znajdzkrzyze(erosion1)
     pokazstangry()
+    #codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
+    #zgoda = ['t', 'tak', 'y', 'yes']
+    #if codalej.lower() in zgoda:
+    #    zasugerujruch(gamestate)
     pokazplansze()
