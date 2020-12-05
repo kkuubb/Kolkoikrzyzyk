@@ -122,6 +122,8 @@ class Pole:
         self.ygora = ygora
         self.xlewo = xlewo
         self.xprawo = xprawo
+        self.srodekx = -1
+        self.srodeky = -1
         self.numer = 0
 
 
@@ -142,30 +144,54 @@ def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER
 def znajdzprzeciecia(prawo, dol, lewo, gora):
     slupki = []
     przeciecielewogora = []
-    przeciecielewogora.append(img_height*gora.pozycjay)
     przeciecielewogora.append(img_width*lewo.pozycjax)
+    przeciecielewogora.append(img_height*gora.pozycjay)
     slupki.append(przeciecielewogora)
     przeciecielewodol = []
-    przeciecielewodol.append(img_height*dol.pozycjay)
     przeciecielewodol.append(img_width*lewo.pozycjax)
+    przeciecielewodol.append(img_height*dol.pozycjay)
     slupki.append(przeciecielewodol)
     przeciecieprawodol = []
-    przeciecieprawodol.append(img_height*dol.pozycjay)
     przeciecieprawodol.append(img_width*prawo.pozycjax)
+    przeciecieprawodol.append(img_height*dol.pozycjay)
     slupki.append(przeciecieprawodol)
     przeciecieprawogora = []
-    przeciecieprawogora.append(img_height*gora.pozycjay)
     przeciecieprawogora.append(img_width*prawo.pozycjax)
+    przeciecieprawogora.append(img_height*gora.pozycjay)
     slupki.append(przeciecieprawogora)
     dlugoscgoralewoprawodol = sqrt((przeciecielewogora[1]-przeciecieprawodol[1])**2 + (przeciecielewogora[0]-przeciecieprawodol[0])**2)
     dlugoscgoraprawolewodol = sqrt((przeciecieprawogora[1]-przeciecielewodol[1])**2 + (przeciecieprawogora[0]-przeciecielewodol[0])**2)
-    slupki.append([dlugoscgoralewoprawodol, dlugoscgoraprawolewodol])
-    dlugoscdobra = (dlugoscgoraprawolewodol+dlugoscgoralewoprawodol)/4
-    slupki.append(dlugoscdobra)
+    #slupki.append([dlugoscgoralewoprawodol, dlugoscgoraprawolewodol])
+    dlugoscdobra = (dlugoscgoraprawolewodol+dlugoscgoralewoprawodol)/5
+    #slupki.append(dlugoscdobra)
     cododajemy = dlugoscdobra/sqrt(2)
     slupki.append(cododajemy)
     return slupki
 
+def znajdzsrodkipol(pola, x):
+    i = 0 
+    for pole in pola:
+        pole.numer = i
+        i+=1
+        if pole.numer == 0:
+            pole.srodekx, pole.srodeky = x[0][0]-x[4], x[0][1]-x[4]
+        if pole.numer == 1:
+            pole.srodekx, pole.srodeky = (x[0][0]+x[4]+x[3][0]-x[4])/2, (x[0][1]-x[4]+x[3][1]-x[4])/2
+        if pole.numer == 2:
+            pole.srodekx, pole.srodeky = x[3][0]+x[4], x[3][1]-x[4]
+        if pole.numer == 3:
+            pole.srodekx, pole.srodeky = (x[0][0]-x[4]+x[1][0]-x[4])/2, (x[0][1]+x[4]+x[1][1]-x[4])/2
+        if pole.numer == 4:
+            pole.srodekx, pole.srodeky = (x[0][0]+x[2][0])/2, (x[1][1]+x[3][1])/2
+        if pole.numer == 5:
+            pole.srodekx, pole.srodeky = (x[3][0]+ x[4] + x[2][0]+x[4])/2, (x[3][1]+x[4]+x[2][1]-x[4])/2
+        if pole.numer == 6:
+            pole.srodekx, pole.srodeky = x[1][0]-x[4], x[1][1]+x[4]
+        if pole.numer == 7:
+            pole.srodekx, pole.srodeky = (x[1][0]+x[4]+x[2][0]-x[4])/2, (x[1][1]+x[4]+x[2][1]+x[4])/2
+        if pole.numer == 8:
+            pole.srodekx, pole.srodeky = x[2][0]+x[4], x[2][1]+x[4]
+    return pola
 
 def znajdzkolka(obraz):
     kolka = []
@@ -345,7 +371,7 @@ def pokazplansze():
     cv2.imshow('image1', lines_edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-zdjecia = ['q2.png', 'q3.png']
+zdjecia = ['q2.png', 'q3.png', '11.png']
 for i in zdjecia:
     # to sa wartosci testowe wykorzystywane do obliczen
     gamestate = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
@@ -380,7 +406,9 @@ for i in zdjecia:
     for i in range(9):
         pola.append(Pole())
     cos = znajdzprzeciecia(kreski[0], kreski[1], kreski[2], kreski[3])
-    print(cos)
+    pola = znajdzsrodkipol(pola, cos)
+    for pole in pola:
+        img = cv2.circle(img, (int(pole.srodekx),int(pole.srodeky)), radius=10, color=(0, 0, 255), thickness=2)
 
     lines_edges = cv2.addWeighted(img, 0.8, gotowe, 1, 0)
     kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
