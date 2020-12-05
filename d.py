@@ -349,34 +349,99 @@ def znajdzkrawedzie():
     return kreski , najdluzsze
 
 
-def zasugerujruch(stan):
-    pass
+def zasugerujruch(stan, znak):
+    czyjuz = 0
+    pole = []
+    for i in range(len(stan)):
+        if stan[i][0] != '-' and stan[i][2] == stan[i][0] and stan[i][1] == '-' and czyjuz == 0:
+            if stan[i][0] == 'x' and znak == 'o':
+                stan[i][1] == 'o'
+                czyjuz = 1
+                pole = [i, 1, 'o']
+            elif stan[i][0] == 'o' and znak == 'x':
+                stan[i][1] == 'x'
+                czyjuz = 1
+                pole = [i, 1, 'x']
+    for k in range(3):
+        if stan[0][k] != '-' and stan[2][k] == stan[0][k] and stan[1][k] == '-' and czyjuz == 0:
+            if stan[0][k]=='x' and znak == 'o':
+                stan[1][k]='o'
+                czyjuz = 1
+                pole = [1, k, 'o']
+            elif stan[0][k] == 'o' and znak == 'x':
+                stan[1][k]='x'
+                czyjuz = 1
+                pole = [1, k, 'x']
+    
+    for i in range(len(stan)):
+        for k in range(3):
+            if stan[i][k]=='-' and czyjuz == 0:
+                if znak == 'o':
+                    pole = [i, k, 'o']
+                    czyjuz = 1
+                    stan[i][k]='o'
+                elif znak == 'x':
+                    pole = [i, k, 'x']
+                    czyjuz = 1
+                    stan[i][k]='x'
+    return stan, pole
+
+def narysujruch(polke, pola, obraz, dlugosc):
+    if polke[0]==0:
+        ktorpole = polke[1]+0
+    if polke[0]==1:
+        ktorpole = polke[1]+3
+    if polke[0]==2:
+        ktorpole = polke[1]+6
+    if polke[2] == 'o':
+        for pole in pola:
+            if pole.numer == ktorpole:
+                obraz = cv2.circle(obraz, (int(pole.srodekx),int(pole.srodeky)), radius=int(dlugosc[4]/2), color=(0, 0, 255), thickness=5)
+    if polke[2] == 'x':
+        for pole in pola:
+            if pole.numer == ktorpole:
+                obraz = cv2.line(obraz, (int(pole.srodekx-dlugosc[4]/3), int(pole.srodeky-dlugosc[4]/3)), (int(pole.srodekx+dlugosc[4]/3), int(pole.srodeky+dlugosc[4]/3)), (0,0,255), 5)
+                obraz = cv2.line(obraz, (int(pole.srodekx+dlugosc[4]/3), int(pole.srodeky-dlugosc[4]/3)), (int(pole.srodekx-dlugosc[4]/3), int(pole.srodeky+dlugosc[4]/3)), (0,0,255), 5)
+    return obraz
 
 
-def pokazstangry():
+
+def pokazstangry(stan):
     print("Stan gry to:")
-    for line in gamestate:
+    for line in stan:
         linetxt = ""
         for cel in line:
             linetxt = linetxt + "|" + cel
         linetxt = linetxt + '|'
         print(linetxt)
-    if (gamestate.count('x') >= gamestate.count('o')):
+
+def czyjruch(stan):
+    ilex = 0
+    ileo = 0
+    for i in stan:
+        ilex += i.count('x')
+        ileo += i.count('o')
+    if (ilex >= ileo):
         print("Teraz ruch gracza O")
+        return 'o'
     else:
         print("Teraz ruch gracza X")
+        return 'x'
 
 
-def pokazplansze():
-    cv2.imshow('image1', lines_edges)
+
+def pokazplansze(obraz):
+    cv2.imshow('image1', obraz)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-zdjecia = ['q2.png', 'q3.png', '11.png']
+zdjecia = ['8.png', 'q2.png', 'q3.png','11.png']
 for i in zdjecia:
     # to sa wartosci testowe wykorzystywane do obliczen
     gamestate = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
     kernel = np.ones((7, 7), np.uint8)
-    img = cv2.imread('zdjecia/'+i)  # najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
+    img = cv2.imread('zdjecia/'+i) # najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
+    oryginal = img 
+    pokazplansze(oryginal) 
     img_width = img.shape[1]
     img_height = img.shape[0]
     img_g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -408,13 +473,17 @@ for i in zdjecia:
     cos = znajdzprzeciecia(kreski[0], kreski[1], kreski[2], kreski[3])
     pola = znajdzsrodkipol(pola, cos)
     for pole in pola:
-        img = cv2.circle(img, (int(pole.srodekx),int(pole.srodeky)), radius=10, color=(0, 0, 255), thickness=2)
+        gotowe = cv2.circle(gotowe, (int(pole.srodekx),int(pole.srodeky)), radius=10, color=(0, 0, 255), thickness=2)
     lines_edges = cv2.addWeighted(img, 0.8, gotowe, 1, 0)
     kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
     krzyze = znajdzkrzyze(erosion1)
-    pokazstangry()
-    #codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
-    #zgoda = ['t', 'tak', 'y', 'yes']
-    #if codalej.lower() in zgoda:
-    #    zasugerujruch(gamestate)
-    pokazplansze()
+    znak = czyjruch(gamestate)
+    pokazstangry(gamestate)
+    codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
+    zgoda = ['t', 'tak', 'y', 'yes']
+    if codalej.lower() in zgoda:
+        gamestate, polko = zasugerujruch(gamestate, znak)
+        oryginal = narysujruch(polko, pola, oryginal ,cos)
+    pokazstangry(gamestate)
+    #pokazplansze(lines_edges)
+    pokazplansze(oryginal)
