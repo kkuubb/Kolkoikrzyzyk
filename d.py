@@ -409,7 +409,6 @@ for i in zdjecia:
     pola = znajdzsrodkipol(pola, cos)
     for pole in pola:
         img = cv2.circle(img, (int(pole.srodekx),int(pole.srodeky)), radius=10, color=(0, 0, 255), thickness=2)
-
     lines_edges = cv2.addWeighted(img, 0.8, gotowe, 1, 0)
     kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
     krzyze = znajdzkrzyze(erosion1)
