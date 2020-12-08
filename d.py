@@ -252,6 +252,7 @@ def znajdzkrzyze(obraz):
         (_, max_loc, r) = found
         (start_x, start_y) = (int(max_loc[0] * r), int(max_loc[1] * r))
         (end_x, end_y) = (int((max_loc[0] + tW) * r), int((max_loc[1] + tH) * r))
+
         krzyze.append(cross(start_x, start_y, end_x, end_y))
 
         # Draw bounding box on ROI
@@ -267,12 +268,14 @@ def znajdzlinie(obraz):
     rho = 1
     theta = np.pi / 180
     threshold = 15
-    min_line_length = img_height/3
+    min_line_length = img_height/3.1
     max_line_gap = 20
     lines = cv2.HoughLinesP(obraz, rho, theta, threshold, np.array([]),
                             min_line_length, max_line_gap)
-
+    (type(lines))
     linie = []
+    if type(lines)!=np.ndarray:
+        return 'nociezko'
     for i in lines:
         linie.append(linia(i[0][0], i[0][1], i[0][2], i[0][3]))
 
@@ -304,7 +307,7 @@ def znajdzkrawedzie():
         if i.orientacja == 0 and i.pozycjay >= 0.5 and i.pozycjay <= 0.9:
             poziomdol.append(i)
             poziom.append(i)
-    if len(pionprawo)== 0 or len(pionlewo)== 0 or len(poziomgora)== 0 or len(poziomgora)== 0:
+    if len(pionprawo)== 0 or len(pionlewo)== 0 or len(poziomgora)== 0 or len(poziomdol)== 0:
         return 'nonie', 'nonapewnonie'
     najdluzszapionprawo = pionprawo[0]
     for i in pion:
@@ -393,6 +396,7 @@ def zasugerujruch(stan, znak):
     return stan, pole
 
 def narysujruch(polke, pola, obraz, dlugosc):
+    ktorpole=-1
     if polke[0]==0:
         ktorpole = polke[1]+0
     if polke[0]==1:
@@ -495,10 +499,8 @@ def zapiszplanszeporuchu(obraz, i):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-jakifolder = 'zdjeciafajne'
+jakifolder = 'dobre'
 onlyfiles = [f for f in listdir(jakifolder) if isfile(join(jakifolder, f))]
-#print(onlyfiles)
-#zdjeciafajne = ['xw.png', 'owk.png', '10.png','11.png', 'q2.png', 'q3.png', '2.jpg']
 zdjecia = onlyfiles
 for i in zdjecia:
     nazwazdjecia = i
@@ -531,6 +533,8 @@ for i in zdjecia:
 
     # tu wykonywane sa obliczenia i konczy sie gra
     linie = znajdzlinie(erosion1)
+    if linie == 'nociezko':
+        continue
     kreski, najdluzsze = znajdzkrawedzie()
     if kreski == 'nonie':
         continue
