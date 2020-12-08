@@ -3,7 +3,7 @@ import cv2
 from scipy import ndimage
 from math import sqrt
 
-iksy = ['zdjecia/x1.png', 'zdjecia/x2.png', 'zdjecia/x3.png', 'zdjecia/x4.png']
+iksy = ['zdjecia/x1.png', 'zdjecia/x2.png', 'zdjecia/x3.png', 'zdjecia/x4.png','zdjecia/x6.png']
 
 
 class linia:
@@ -415,6 +415,42 @@ def pokazstangry(stan):
         linetxt = linetxt + '|'
         print(linetxt)
 
+def czyktoswygral(stan):
+    czyjuz = 0
+    for i in range(len(stan)):
+        if stan[i][0] != '-' and stan[i][2] == stan[i][0] and stan[i][1] == stan[i][0] and czyjuz == 0:
+            if stan[i][0] == 'x':
+                czyjuz = 1
+                print('Wygral gracz X')
+                return 'x'
+            elif stan[i][0] == 'o':
+                print('Wygral gracz O')
+                czyjuz = 1
+                return 'o'
+    for k in range(3):
+        if stan[0][k] != '-' and stan[2][k] == stan[0][k] and stan[1][k] == stan[0][k] and czyjuz == 0:
+            if stan[0][k]=='x':
+                czyjuz = 1
+                print('Wygral gracz X')
+                return 'x'
+            elif stan[0][k] == 'o':
+                print('Wygral gracz O')
+                czyjuz = 1
+                return 'o'
+
+    if stan[1][1] != '-' and ((stan[1][1] == stan[0][0] and stan[2][2] == stan [1][1]) or (stan[1][1] == stan[0][2] and stan[2][0] == stan [1][1])) and czyjuz ==0:
+        if stan[1][1] == 'x':
+            czyjuz = 1
+            print('Wygral gracz X')
+            return 'x'
+        elif stan[1][1] == 'o':
+            czyjuz = 1
+            print('Wygral gracz O')
+            return 'o'
+    return -1
+    
+
+
 def czyjruch(stan):
     ilex = 0
     ileo = 0
@@ -434,14 +470,14 @@ def pokazplansze(obraz):
     cv2.imshow('image1', obraz)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-zdjecia = ['8.png', 'q2.png', 'q3.png','11.png']
+zdjecia = ['owk.png', '10.png','11.png', 'q2.png', 'q3.png', '2.jpg']
 for i in zdjecia:
     # to sa wartosci testowe wykorzystywane do obliczen
     gamestate = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
     kernel = np.ones((7, 7), np.uint8)
     img = cv2.imread('zdjecia/'+i) # najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
     oryginal = img 
-    pokazplansze(oryginal) 
+    #pokazplansze(oryginal) 
     img_width = img.shape[1]
     img_height = img.shape[0]
     img_g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -462,6 +498,7 @@ for i in zdjecia:
     line_image = np.copy(img) * 0
     gotowe = np.copy(img) * 0
 
+
     # tu wykonywane sa obliczenia i konczy sie gra
     linie = znajdzlinie(erosion1)
     kreski, najdluzsze = znajdzkrawedzie()
@@ -475,15 +512,23 @@ for i in zdjecia:
     for pole in pola:
         gotowe = cv2.circle(gotowe, (int(pole.srodekx),int(pole.srodeky)), radius=10, color=(0, 0, 255), thickness=2)
     lines_edges = cv2.addWeighted(img, 0.8, gotowe, 1, 0)
-    kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
     krzyze = znajdzkrzyze(erosion1)
-    znak = czyjruch(gamestate)
+    kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
+    wygrana = czyktoswygral(gamestate)
     pokazstangry(gamestate)
-    codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
-    zgoda = ['t', 'tak', 'y', 'yes']
-    if codalej.lower() in zgoda:
-        gamestate, polko = zasugerujruch(gamestate, znak)
-        oryginal = narysujruch(polko, pola, oryginal ,cos)
-    pokazstangry(gamestate)
-    #pokazplansze(lines_edges)
     pokazplansze(oryginal)
+    if wygrana == -1:
+        znak = czyjruch(gamestate)
+        codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
+        #codalej = 't'
+        zgoda = ['t', 'tak', 'y', 'yes']
+        if codalej.lower() in zgoda:
+            gamestate, polko = zasugerujruch(gamestate, znak)
+            oryginal = narysujruch(polko, pola, oryginal ,cos)
+            pokazplansze(lines_edges)
+            pokazplansze(oryginal)
+            pokazstangry(gamestate)
+        else:
+            pokazplansze(lines_edges)            
+
+        
