@@ -2,9 +2,14 @@ import numpy as np
 import cv2
 from scipy import ndimage
 from math import sqrt
+from os import listdir
+from os.path import isfile, join
+import sys
 
-iksy = ['zdjecia/x1.png', 'zdjecia/x2.png', 'zdjecia/x3.png', 'zdjecia/x4.png','zdjecia/x6.png']
-
+iksy = [f for f in listdir('zdjeciax') if isfile(join('zdjeciax', f))]
+#print(iksy)
+#iksy = ['zdjeciax/x1.png', 'zdjeciax/x2.png', 'zdjeciax/x3.png', 'zdjeciax/x4.png','zdjecia/x6.png']
+#print(iksy)
 
 class linia:
     def __init__(self, x1=0, y1=0, x2=0, y2=0):
@@ -195,7 +200,7 @@ def znajdzsrodkipol(pola, x):
 
 def znajdzkolka(obraz):
     kolka = []
-    circles = cv2.HoughCircles(obraz, cv2.HOUGH_GRADIENT, 1, 50, param1=50, param2=40, minRadius=1, maxRadius=100)
+    circles = cv2.HoughCircles(obraz, cv2.HOUGH_GRADIENT, 1, 50, param1=40, param2=40, minRadius=1, maxRadius=100)
     if circles is not None:
         circles = np.round(circles[0, :]).astype("int")
         for (x, y, r) in circles:
@@ -213,14 +218,14 @@ def znajdzkolka(obraz):
 def znajdzkrzyze(obraz):
     krzyze = []
     for i in iksy:
-        template = cv2.imread(i)
+        template = cv2.imread('zdjeciax/' + i)
         template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
         template = cv2.Canny(template, 50, 200)
         # template = cv2.dilate(template,kernel,iterations = 1)
         (tH, tW) = template.shape[:2]
         found = None
 
-        for scale in np.linspace(0.1, 3.0, 20)[::-1]:
+        for scale in np.linspace(0.1, 3, 20)[::-1]:
 
             # Resize image to scale and keep track of ratio
             resized = maintain_aspect_ratio_resize(obraz, width=int(obraz.shape[1] * scale))
@@ -247,6 +252,7 @@ def znajdzkrzyze(obraz):
         (_, max_loc, r) = found
         (start_x, start_y) = (int(max_loc[0] * r), int(max_loc[1] * r))
         (end_x, end_y) = (int((max_loc[0] + tW) * r), int((max_loc[1] + tH) * r))
+
         krzyze.append(cross(start_x, start_y, end_x, end_y))
 
         # Draw bounding box on ROI
@@ -262,12 +268,14 @@ def znajdzlinie(obraz):
     rho = 1
     theta = np.pi / 180
     threshold = 15
-    min_line_length = 100
+    min_line_length = img_height/3.1
     max_line_gap = 20
     lines = cv2.HoughLinesP(obraz, rho, theta, threshold, np.array([]),
                             min_line_length, max_line_gap)
-
+    (type(lines))
     linie = []
+    if type(lines)!=np.ndarray:
+        return 'nociezko'
     for i in lines:
         linie.append(linia(i[0][0], i[0][1], i[0][2], i[0][3]))
 
@@ -299,7 +307,8 @@ def znajdzkrawedzie():
         if i.orientacja == 0 and i.pozycjay >= 0.5 and i.pozycjay <= 0.9:
             poziomdol.append(i)
             poziom.append(i)
-
+    if len(pionprawo)== 0 or len(pionlewo)== 0 or len(poziomgora)== 0 or len(poziomdol)== 0:
+        return 'nonie', 'nonapewnonie'
     najdluzszapionprawo = pionprawo[0]
     for i in pion:
         if i.dlugosc > najdluzszapionprawo.dlugosc and i.pozycjax > 0.5:
@@ -387,6 +396,7 @@ def zasugerujruch(stan, znak):
     return stan, pole
 
 def narysujruch(polke, pola, obraz, dlugosc):
+    ktorpole=-1
     if polke[0]==0:
         ktorpole = polke[1]+0
     if polke[0]==1:
@@ -470,12 +480,34 @@ def pokazplansze(obraz):
     cv2.imshow('image1', obraz)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-zdjecia = ['owk.png', '10.png','11.png', 'q2.png', 'q3.png', '2.jpg']
+
+def zapiszplanszeory(obraz, i):
+    nazwa = str('gotowe/' + i[:-4] + '_oryginal' + '.png')
+    cv2.imwrite(nazwa, obraz)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def zapiszplanszecowykryl(obraz, i):
+    nazwa = str('gotowe/' + i[:-4] + '_wykryte' + '.png')
+    cv2.imwrite(nazwa, obraz)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def zapiszplanszeporuchu(obraz, i):
+    nazwa = str('gotowe/' + i[:-4] + '_ruch' + '.png')
+    cv2.imwrite(nazwa, obraz)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+jakifolder = 'testowane'
+onlyfiles = [f for f in listdir(jakifolder) if isfile(join(jakifolder, f))]
+zdjecia = onlyfiles
 for i in zdjecia:
+    nazwazdjecia = i
     # to sa wartosci testowe wykorzystywane do obliczen
     gamestate = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
     kernel = np.ones((7, 7), np.uint8)
-    img = cv2.imread('zdjecia/'+i) # najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
+    img = cv2.imread(jakifolder + '/'+i) # najlepsze do testow 10.png, 11.png, 2.jpg #odreczny rysunek q.png (nie lapie dobrze lini)
     oryginal = img 
     #pokazplansze(oryginal) 
     img_width = img.shape[1]
@@ -501,7 +533,11 @@ for i in zdjecia:
 
     # tu wykonywane sa obliczenia i konczy sie gra
     linie = znajdzlinie(erosion1)
+    if linie == 'nociezko':
+        continue
     kreski, najdluzsze = znajdzkrawedzie()
+    if kreski == 'nonie':
+        continue
     for i in kreski:
         cv2.line(gotowe, (i.x1, i.y1), (i.x2, i.y2), (255, 255, 0), 5)
     pola = []
@@ -516,17 +552,20 @@ for i in zdjecia:
     kolka = znajdzkolka(blur_gray)  # dziala tez dobrze na blur_gray
     wygrana = czyktoswygral(gamestate)
     pokazstangry(gamestate)
-    pokazplansze(oryginal)
+    #pokazplansze(oryginal)
+    zapiszplanszeory(oryginal, nazwazdjecia)
+    #pokazplansze(lines_edges)
+    zapiszplanszecowykryl(lines_edges, nazwazdjecia)
     if wygrana == -1:
         znak = czyjruch(gamestate)
-        codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
-        #codalej = 't'
+        #codalej = input("Czy chcesz abym zasugerowal nastepny ruch?")
+        codalej = 't'
         zgoda = ['t', 'tak', 'y', 'yes']
         if codalej.lower() in zgoda:
             gamestate, polko = zasugerujruch(gamestate, znak)
             oryginal = narysujruch(polko, pola, oryginal ,cos)
-            pokazplansze(lines_edges)
-            pokazplansze(oryginal)
+            #pokazplansze(oryginal)
+            zapiszplanszeporuchu(oryginal, nazwazdjecia)
             pokazstangry(gamestate)
         else:
             pokazplansze(lines_edges)            
