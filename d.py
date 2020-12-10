@@ -225,7 +225,7 @@ def znajdzkrzyze(obraz):
         (tH, tW) = template.shape[:2]
         found = None
 
-        for scale in np.linspace(0.1, 3.0, 20)[::-1]:
+        for scale in np.linspace(0.1, 3, 20)[::-1]:
 
             # Resize image to scale and keep track of ratio
             resized = maintain_aspect_ratio_resize(obraz, width=int(obraz.shape[1] * scale))
@@ -499,7 +499,7 @@ def zapiszplanszeporuchu(obraz, i):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-jakifolder = 'dobre'
+jakifolder = 'testowane'
 onlyfiles = [f for f in listdir(jakifolder) if isfile(join(jakifolder, f))]
 zdjecia = onlyfiles
 for i in zdjecia:
